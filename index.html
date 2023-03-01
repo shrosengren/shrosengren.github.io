@@ -5,7 +5,8 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simon Högborg Rosengren | Hi, my name is Simon 👋☺️</title>
+  <title>Hi, my name is Simon 👋☺️ | Simon Högborg Rosengren | Campaign Manager, CRM/SoMe strategist and Product
+    Evangelist</title>
 
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-64XL80KR3Z"></script>
@@ -239,8 +240,24 @@
   </style>
 
   <script>
+    function setCookie(name, value, days) {
+      let expires = "";
+      if (days) {
+        let date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+      }
+      document.cookie = name + "=" + (value || "") + expires + "; path=/";
+    }
+
+    function hideCookieNotification() {
+      const gdprInfo = document.getElementById("gdpr-info");
+      gdprInfo.style.display = "none";
+      setCookie("cookie-accepted", true, 365);
+    }
+
     function gdpr_ok() {
-      document.getElementById("gdpr-info").style.display = "none";
+      hideCookieNotification();
     }
   </script>
 
@@ -296,10 +313,11 @@
         <li><a href="https://linkedin.com/in/simon-rosengren" target="_blank"
             title="Go to my LinkedIn page">🤝&emsp;LinkedIn</a>
         </li>
-        <li><a href="https://www.pexels.com/sv-se/@shrosengren/" target="_blank" title="Visit my Pexels gallery">📷&emsp;My
+        <li><a href="https://www.pexels.com/sv-se/@shrosengren/" target="_blank"
+            title="Visit my Pexels gallery">📷&emsp;My
             Pexels gallery</a></li>
-          <li><a href="http://greatbeyond.se" target="_blank" title="Visit Great Beyond">🚩&emsp;Great Beyond</a></li>
-          <li><a href="http://tool.builders" target="_blank" title="Visit Toolbuilders">🛠️&emsp;Toolbuilders</a></li>
+        <li><a href="http://greatbeyond.se" target="_blank" title="Visit Great Beyond">🚩&emsp;Great Beyond</a></li>
+        <li><a href="http://tool.builders" target="_blank" title="Visit Toolbuilders">🛠️&emsp;Toolbuilders</a></li>
       </ul>
     </section>
 
