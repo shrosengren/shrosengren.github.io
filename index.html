@@ -330,6 +330,7 @@
     function gdpr_ok() {
       hideCookieNotification();
       setCookie("cookie-accepted", true, 365);
+      document.getElementById("gdpr-info").style.display = "none";
       console.log("gdpr_ok triggad");
     }
 
