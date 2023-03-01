@@ -239,28 +239,7 @@
     }
   </style>
 
-  <script>
-    function setCookie(name, value, days) {
-      let expires = "";
-      if (days) {
-        let date = new Date();
-        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-        expires = "; expires=" + date.toUTCString();
-      }
-      document.cookie = name + "=" + (value || "") + expires + "; path=/";
-    }
-
-    function hideCookieNotification() {
-      const gdprInfo = document.getElementById("gdpr-info");
-      gdprInfo.style.display = "none";
-      setCookie("cookie-accepted", true, 365);
-    }
-
-    function gdpr_ok() {
-      hideCookieNotification();
-    }
-  </script>
-
+  
   <!-- OG Metadata -->
   <meta property="og:title" content="Hi, my name is Simon 👋">
   <meta property="og:site_name" content="Simon Högborg Rosengren">
@@ -313,16 +292,49 @@
         <li><a href="https://linkedin.com/in/simon-rosengren" target="_blank"
             title="Go to my LinkedIn page">🤝&emsp;LinkedIn</a>
         </li>
-        <li><a href="https://www.pexels.com/sv-se/@shrosengren/" target="_blank"
+        <!-- <li><a href="https://www.pexels.com/sv-se/@shrosengren/" target="_blank"
             title="Visit my Pexels gallery">📷&emsp;My
             Pexels gallery</a></li>
         <li><a href="http://greatbeyond.se" target="_blank" title="Visit Great Beyond">🚩&emsp;Great Beyond</a></li>
         <li><a href="http://tool.builders" target="_blank" title="Visit Toolbuilders">🛠️&emsp;Toolbuilders</a></li>
-      </ul>
+      </ul> -->
     </section>
 
 
   </div>
+
+  <script>
+    function setCookie(name, value, days) {
+      let expires = "";
+      if (days) {
+        let date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+      }
+      document.cookie = name + "=" + (value || "") + expires + "; path=/";
+      console.log("setCookie triggad");
+    }
+
+    function hideCookieNotification() {
+      const gdprInfo = document.getElementById("gdpr-info");
+      console.log("hideCookieNotification triggad");
+      if (document.cookie.split(';').some((item) => item.trim().startsWith('cookie-accepted='))) {
+        gdprInfo.style.display = "none";
+        console.log("cookie hittad");
+      } else {
+        gdprInfo.style.display = "block";
+        console.log("cookie inte hittad");
+      }
+    }
+
+    function gdpr_ok() {
+      hideCookieNotification();
+      setCookie("cookie-accepted", true, 365);
+      console.log("gdpr_ok triggad");
+    }
+
+    hideCookieNotification();
+  </script>
 </body>
 
 </html>
