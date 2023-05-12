@@ -52,6 +52,7 @@
       letter-spacing: 10%;
       line-height: 0.9;
       font-size: 5rem;
+      padding: 0.1em;
     }
 
     h3,
@@ -239,7 +240,7 @@
     }
   </style>
 
-  
+
   <!-- OG Metadata -->
   <meta property="og:title" content="Hi, my name is Simon 👋">
   <meta property="og:site_name" content="Simon Högborg Rosengren">
@@ -312,29 +313,24 @@
         expires = "; expires=" + date.toUTCString();
       }
       document.cookie = name + "=" + (value || "") + expires + "; path=/";
-      console.log("setCookie triggad");
     }
 
     function hideCookieNotification() {
       const gdprInfo = document.getElementById("gdpr-info");
-      console.log("hideCookieNotification triggad");
       if (document.cookie.split(';').some((item) => item.trim().startsWith('cookie-accepted='))) {
         gdprInfo.style.display = "none";
-        console.log("cookie hittad");
       } else {
         gdprInfo.style.display = "block";
-        console.log("cookie inte hittad");
       }
     }
 
     function gdpr_ok() {
-      hideCookieNotification();
-      setCookie("cookie-accepted", true, 365);
-      document.getElementById("gdpr-info").style.display = "none";
-      console.log("gdpr_ok triggad");
+      setCookie("cookie-accepted", true, 365); // Set the cookie first
+      hideCookieNotification(); // Then hide the notification
     }
 
     hideCookieNotification();
+
   </script>
 </body>
 
