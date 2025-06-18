@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Strength Logger 2.0</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* --- THEME: "The Grinder" --- */
+    :root {
+      --bg-color: #1A1A1A;
+      --surface-color: #2C2C2C;
+      --primary-color: #FBBF24; /* Safety Yellow */
+      --primary-color-dark: #F59E0B;
+      --text-color: #E5E5E5;
+      --text-muted-color: #888888;
+      --border-color: #444444;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { 
+      font-family: 'Roboto Mono', monospace;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      min-height: 100vh;
+      padding: 15px;
+    }
+    .container { 
+      max-width: 700px; 
+      margin: 0 auto; 
+      background-color: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: 8px; 
+      padding: 20px; 
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    }
+    /* --- Header --- */
+    .header { 
+      text-align: center; 
+      margin-bottom: 20px; 
+      border-bottom: 2px solid var(--primary-color);
+      padding-bottom: 15px;
+    }
+    .header h1 { 
+      font-size: 2rem; 
+      font-weight: 700; 
+      color: var(--primary-color);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    /* --- Buttons and Inputs --- */
+    .button {
+      padding: 12px 15px;
+      border: none;
+      border-radius: 5px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 16px;
+      font-family: 'Roboto Mono', monospace;
+      text-transform: uppercase;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+    .button-primary { 
+      background-color: var(--primary-color); 
+      color: #1A1A1A;
+    }
+    .button-primary:hover {
+      background-color: var(--primary-color-dark);
+      transform: translateY(-2px);
+    }
+    .button-secondary {
+      background-color: #444;
+      color: var(--text-color);
+    }
+    .button-secondary:hover { background-color: #555; }
+    
+    .input-group { position: relative; margin-bottom: 15px; }
+    .input-field { 
+      width: 100%;
+      padding: 12px; 
+      border: 1px solid var(--border-color); 
+      border-radius: 5px; 
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-size: 16px;
+      font-family: 'Roboto Mono', monospace;
+    }
+    .input-field:focus {
+      outline: none;
+      border-color: var(--primary-color);
+    }
+    .input-adjust-buns { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); display: flex; gap: 5px; }
+    .adjust-btn { background: #555; color: #fff; border: none; width: 28px; height: 28px; border-radius: 5px; font-size: 20px; line-height: 28px; cursor: pointer; }
+    
+    /* --- Tabs --- */
+    .tab-buttons { display: flex; border: 1px solid var(--border-color); border-radius: 5px; margin-bottom: 20px; overflow: hidden; }
+    .tab-button { flex: 1; padding: 12px; border: none; background: transparent; cursor: pointer; text-align: center; font-weight: 700; color: var(--text-muted-color); transition: all 0.2s ease; font-family: 'Roboto Mono', monospace; font-size: 14px; text-transform: uppercase;}
+    .tab-button.active { background-color: var(--primary-color); color: var(--bg-color); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    /* --- Workout Tab --- */
+    .current-set-panel { background-color: var(--bg-color); padding: 15px; border-radius: 5px; border: 1px solid var(--border-color); margin-bottom: 20px; }
+    .exercise-select-btn { background: transparent; border: 1px dashed var(--border-color); font-size: 18px; font-weight: 700; cursor: pointer; color: var(--text-muted-color); width: 100%; text-align: center; padding: 15px; border-radius: 5px; transition: all 0.2s ease; margin-bottom: 15px; }
+    .exercise-select-btn:hover { border-color: var(--primary-color); color: var(--primary-color); }
+    .suggestion-box { background: rgba(251, 191, 36, 0.1); border: 1px solid var(--primary-color); border-radius: 5px; padding: 10px; font-size: 14px; margin-bottom: 15px; text-align: center; cursor: pointer; }
+
+    .inputs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+    .actions-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 15px; }
+    .actions-row { display: flex; gap: 10px; margin-top: 15px; }
+    
+    /* --- History & Stats --- */
+    .session-list { list-style: none; max-height: 300px; overflow-y: auto; }
+    .session-list li { padding: 10px; margin-bottom: 8px; background-color: var(--bg-color); border-radius: 5px; border-left: 4px solid var(--primary-color); display: flex; justify-content: space-between; align-items: center; }
+    .set-info .exercise { font-weight: 700; }
+    .set-info .details { font-size: 14px; color: var(--text-muted-color); }
+    .set-actions .pr-badge { background: var(--primary-color); color: var(--bg-color); font-size: 12px; padding: 2px 6px; border-radius: 3px; font-weight: 700; margin-right: 10px; }
+    .delete-btn { background: #991B1B; color: #fff; border:none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 12px; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:15px; margin-bottom: 25px; }
+    .stat-card { background: var(--bg-color); padding: 15px; border-radius: 5px; text-align:center; }
+    .stat-card .value { font-size: 1.75rem; font-weight: 700; color: var(--primary-color); }
+    .stat-card .label { font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted-color); }
+    
+    .history-card { background: var(--bg-color); padding: 15px; border-radius: 5px; margin-bottom:10px; cursor: pointer; }
+    .history-card-header { display: flex; justify-content: space-between; align-items: center; }
+    .history-card-header h3 { color: var(--primary-color); font-size: 1.1rem; }
+    .history-card-summary { display: flex; gap: 15px; font-size: 0.8rem; color: var(--text-muted-color); }
+    .history-card-details { display: none; margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px; }
+
+    /* --- Templates Tab --- */
+    .template-card { background: var(--bg-color); padding: 15px; border-radius: 5px; margin-bottom: 10px; }
+    .template-card h3 { color: var(--primary-color); margin-bottom: 10px; }
+    .template-card ul { list-style: none; color: var(--text-muted-color); margin-bottom: 15px; padding-left: 0; }
+    .template-exercise-item { display:flex; justify-content: space-between; align-items:center; margin-bottom: 5px; }
+
+    /* --- Modal --- */
+    .modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); backdrop-filter:blur(5px); display:flex; justify-content:center; align-items:center; z-index:1000; opacity:0; visibility:hidden; transition:all 0.3s ease; }
+    .modal-overlay.visible { opacity:1; visibility:visible; }
+    .modal-content { background: var(--surface-color); border:1px solid var(--border-color); padding: 25px; border-radius: 8px; text-align:center; max-width: 90%; width: 400px; }
+    .modal-message { font-size: 16px; margin-bottom: 20px; line-height: 1.6; }
+    .modal-actions { display: flex; justify-content: center; gap: 15px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header"><h1>Strength Logger</h1></div>
+
+    <div class="tab-buttons">
+      <button class="tab-button active" data-tab="workout">Workout</button>
+      <button class="tab-button" data-tab="templates">Templates</button>
+      <button class="tab-button" data-tab="history">History</button>
+    </div>
+
+    <!-- Workout Tab -->
+    <div class="tab-content active" id="workout-tab">
+      <div class="current-set-panel">
+        <button class="exercise-select-btn" id="exerciseSelectBtn">SELECT EXERCISE</button>
+        <div id="suggestionBox" class="suggestion-box" style="display:none;"></div>
+
+        <div class="inputs-grid">
+          <div class="input-group">
+            <input type="number" id="weightInput" class="input-field" placeholder="Weight">
+            <div class="input-adjust-buns">
+              <button class="adjust-btn" data-input="weight" data-step="-2.5">-</button>
+              <button class="adjust-btn" data-input="weight" data-step="2.5">+</button>
+            </div>
+          </div>
+          <div class="input-group">
+            <input type="number" id="repsInput" class="input-field" placeholder="Reps">
+             <div class="input-adjust-buns">
+              <button class="adjust-btn" data-input="reps" data-step="-1">-</button>
+              <button class="adjust-btn" data-input="reps" data-step="1">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="actions-grid">
+          <button class="button button-primary" id="addSetBtn">Add Set</button>
+          <button class="button button-secondary" id="timerBtn">Rest (90s)</button>
+        </div>
+         <div class="actions-row">
+            <button class="button button-secondary" id="endWorkoutBtn" style="flex:1;">End Workout</button>
+        </div>
+      </div>
+      
+      <h3 style="margin-bottom:10px;text-transform:uppercase;">Current Session</h3>
+      <ul class="session-list" id="sessionHistory"></ul>
+    </div>
+
+    <!-- Templates Tab -->
+    <div class="tab-content" id="templates-tab">
+        <div class="template-card" id="createTemplateCard">
+            <h3>Create New Template</h3>
+            <div class="input-group">
+                <input type="text" id="newTemplateName" class="input-field" placeholder="Template Name (e.g., Push Day)">
+            </div>
+            <div id="newTemplateExercises"></div>
+            <button class="button button-secondary" id="addExerciseToTemplateBtn" style="margin-bottom:15px;">+ Add Exercise</button>
+            <button class="button button-primary" id="saveTemplateBtn">Save New Template</button>
+        </div>
+        <hr style="border-color: var(--border-color); margin: 20px 0;">
+        <h3>Saved Templates</h3>
+        <div id="templateList"></div>
+    </div>
+
+    <!-- History Tab -->
+    <div class="tab-content" id="history-tab">
+       <div id="statsSection"></div>
+       <hr style="border-color: var(--border-color); margin: 20px 0;">
+       <h3 style="margin-bottom:10px;text-transform:uppercase;">Session History</h3>
+       <div id="historyList"></div>
+       <hr style="border-color: var(--border-color); margin: 20px 0;">
+       <div class="template-card">
+           <h3>Data Management</h3>
+           <p style="color:var(--text-muted-color); margin-bottom: 15px; font-size:14px;">Save your data to a file or import it on another device.</p>
+           <div class="actions-row">
+               <button class="button button-primary" id="exportDataBtn">Export Data</button>
+               <button class="button button-secondary" id="importDataBtn">Import Data</button>
+               <input type="file" id="importFile" style="display:none;" accept=".json">
+           </div>
+       </div>
+    </div>
+  </div>
+
+  <!-- Modal Structure for Exercise Selection -->
+  <div class="modal-overlay" id="exerciseModal">
+    <div class="modal-content" id="exerciseModalContent">
+        <h2 style="margin-bottom: 20px;">Select Exercise</h2>
+        <div id="exerciseList" style="max-height: 300px; overflow-y: auto; margin-bottom: 20px;"></div>
+        <div class="input-group" style="display:flex; gap: 10px;">
+            <input type="text" id="newExerciseName" class="input-field" placeholder="New Exercise Name">
+            <button class="button button-primary" id="addNewExerciseBtn">+</button>
+        </div>
+    </div>
+  </div>
+  
+  <!-- Modal for General Alerts/Confirms -->
+  <div class="modal-overlay" id="alertModal">
+     <div class="modal-content">
+      <p class="modal-message" id="alertModalMessage"></p>
+      <div class="modal-actions" id="alertModalActions"></div>
+    </div>
+  </div>
+
+  <script>
+    // --- STATE & CONFIG ---
+    let state = {
+      sessions: [],
+      templates: [],
+      personalRecords: {},
+      exercises: ['Deadlift', 'Squat', 'Bench Press', 'Overhead Press', 'Barbell Row', 'Pull-ups', 'Dips', 'Bicep Curls', 'Tricep Extensions', 'Plank', 'Walking Lunges', 'Single-leg Deadlift', 'Box Jumps', 'Back Squat', 'Front Squat', 'Romanian Deadlift', 'Hip Thrusts', 'Lateral Raises'],
+      currentSessionId: 1,
+      currentExercise: '',
+      programExecution: { isActive: false, templateName: null, queue: [], currentIndex: 0 }
+    };
+    let restTimer = null;
+    let newTemplateData = []; // For the template builder
+
+    // --- DOM ELEMENTS ---
+    const dom = {
+      //... (omitted for brevity, assume all elements are correctly selected)
+      container: document.querySelector('.container'),
+      tabButtons: document.querySelectorAll('.tab-button'),
+      tabContents: document.querySelectorAll('.tab-content'),
+      exerciseSelectBtn: document.getElementById('exerciseSelectBtn'),
+      suggestionBox: document.getElementById('suggestionBox'),
+      weightInput: document.getElementById('weightInput'),
+      repsInput: document.getElementById('repsInput'),
+      addSetBtn: document.getElementById('addSetBtn'),
+      timerBtn: document.getElementById('timerBtn'),
+      endWorkoutBtn: document.getElementById('endWorkoutBtn'),
+      sessionHistory: document.getElementById('sessionHistory'),
+      newTemplateName: document.getElementById('newTemplateName'),
+      newTemplateExercises: document.getElementById('newTemplateExercises'),
+      addExerciseToTemplateBtn: document.getElementById('addExerciseToTemplateBtn'),
+      saveTemplateBtn: document.getElementById('saveTemplateBtn'),
+      templateList: document.getElementById('templateList'),
+      statsSection: document.getElementById('statsSection'),
+      historyList: document.getElementById('historyList'),
+      exportDataBtn: document.getElementById('exportDataBtn'),
+      importDataBtn: document.getElementById('importDataBtn'),
+      importFile: document.getElementById('importFile'),
+      exerciseModal: document.getElementById('exerciseModal'),
+      exerciseList: document.getElementById('exerciseList'),
+      newExerciseName: document.getElementById('newExerciseName'),
+      addNewExerciseBtn: document.getElementById('addNewExerciseBtn'),
+      alertModal: document.getElementById('alertModal'),
+      alertModalMessage: document.getElementById('alertModalMessage'),
+      alertModalActions: document.getElementById('alertModalActions'),
+    };
+    
+    // --- UTILS & HELPERS ---
+    const showAlert = (message, confirmCallback = null) => {
+        dom.alertModalMessage.textContent = message;
+        dom.alertModalActions.innerHTML = '';
+        if (confirmCallback) {
+            const confirmBtn = document.createElement('button');
+            confirmBtn.className = 'button button-primary';
+            confirmBtn.textContent = 'Confirm';
+            confirmBtn.onclick = () => { confirmCallback(); hideAlert(); };
+            
+            const cancelBtn = document.createElement('button');
+            cancelBtn.className = 'button button-secondary';
+            cancelBtn.textContent = 'Cancel';
+            cancelBtn.onclick = hideAlert;
+            
+            dom.alertModalActions.append(confirmBtn, cancelBtn);
+        } else {
+            const okBtn = document.createElement('button');
+            okBtn.className = 'button button-primary';
+            okBtn.textContent = 'OK';
+            okBtn.onclick = hideAlert;
+            dom.alertModalActions.appendChild(okBtn);
+        }
+        dom.alertModal.classList.add('visible');
+    };
+    const hideAlert = () => dom.alertModal.classList.remove('visible');
+
+    // --- DATA PERSISTENCE ---
+    const saveData = () => {
+      localStorage.setItem('strengthLoggerData_v2', JSON.stringify(state));
+    };
+    const loadData = () => {
+      const saved = localStorage.getItem('strengthLoggerData_v2');
+      if (saved) {
+        const loadedState = JSON.parse(saved);
+        // Ensure all keys from default state are present
+        state = { ...state, ...loadedState };
+      }
+    };
+    
+    // --- RENDERING ---
+    const render = () => {
+      renderSessionHistory();
+      renderTemplates();
+      renderExerciseList();
+      renderHistoryTab();
+      updateWorkoutUI();
+    };
+
+    const renderSessionHistory = () => {
+        dom.sessionHistory.innerHTML = '';
+        const currentSets = state.sessions.filter(s => s.session === state.currentSessionId);
+        currentSets.slice().reverse().forEach(set => {
+            const li = document.createElement('li');
+            const prBadge = set.isPR ? `<span class="pr-badge">PR 🏆</span>` : '';
+            li.innerHTML = `
+                <div class="set-info">
+                    <div class="exercise">${set.exercise}</div>
+                    <div class="details">${set.weight} x ${set.reps}</div>
+                </div>
+                <div class="set-actions">
+                    ${prBadge}
+                    <button class="delete-btn" data-id="${set.id}">×</button>
+                </div>
+            `;
+            dom.sessionHistory.appendChild(li);
+        });
+    };
+    
+    const renderTemplates = () => {
+        dom.templateList.innerHTML = '';
+        state.templates.forEach((template, index) => {
+            const card = document.createElement('div');
+            card.className = 'template-card';
+            const exercisesHTML = template.exercises.map(ex => `<li>${ex.sets}x ${ex.exercise}</li>`).join('');
+            card.innerHTML = `
+                <h3>${template.name}</h3>
+                <ul>${exercisesHTML}</ul>
+                <div class="actions-row">
+                    <button class="button button-primary" data-template-index="${index}">Start Workout</button>
+                    <button class="button button-secondary" data-delete-index="${index}">Delete</button>
+                </div>
+            `;
+            dom.templateList.appendChild(card);
+        });
+    };
+
+    const renderExerciseList = () => {
+        dom.exerciseList.innerHTML = '';
+         state.exercises.sort().forEach(ex => {
+            const btn = document.createElement('button');
+            btn.className = 'button button-secondary';
+            btn.textContent = ex;
+            btn.style.width = '100%';
+            btn.style.marginBottom = '10px';
+            btn.onclick = () => {
+                if(dom.exerciseModal.dataset.mode === 'template') {
+                   addExerciseToTemplateBuilder(ex);
+                } else {
+                   selectExercise(ex);
+                }
+            };
+            dom.exerciseList.appendChild(btn);
+        });
+    };
+    
+    const renderHistoryTab = () => {
+        // Vanity Stats
+        const totalVolume = state.sessions.reduce((sum, s) => sum + (s.weight * s.reps), 0);
+        const totalSessions = new Set(state.sessions.map(s => s.session)).size;
+        let daysSince = 'N/A';
+        if (state.sessions.length > 0) {
+            const lastDate = new Date(state.sessions[state.sessions.length - 1].datetime);
+            const today = new Date();
+            const diffTime = Math.abs(today - lastDate);
+            daysSince = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        }
+        dom.statsSection.innerHTML = `
+            <div class="stats-grid">
+                <div class="stat-card"><div class="value">${totalVolume.toLocaleString()}</div><div class="label">Total Volume</div></div>
+                <div class="stat-card"><div class="value">${totalSessions}</div><div class="label">Sessions</div></div>
+                <div class="stat-card"><div class="value">${daysSince}</div><div class="label">Days Since Last</div></div>
+            </div>
+        `;
+        
+        // History List
+        dom.historyList.innerHTML = '';
+        const sessionsGrouped = state.sessions.reduce((acc, set) => {
+            (acc[set.session] = acc[set.session] || []).push(set);
+            return acc;
+        }, {});
+        
+        Object.keys(sessionsGrouped).sort((a,b) => b-a).forEach(sessionId => {
+            const sets = sessionsGrouped[sessionId];
+            if (sets.length === 0) return;
+            
+            const sessionVolume = sets.reduce((sum, s) => sum + (s.weight * s.reps), 0);
+            const uniqueExercises = new Set(sets.map(s => s.exercise)).size;
+            const card = document.createElement('div');
+            card.className = 'history-card';
+            card.dataset.sessionId = sessionId;
+            card.innerHTML = `
+                <div class="history-card-header">
+                    <h3>${new Date(sets[0].datetime).toLocaleDateString()}</h3>
+                    <div class="history-card-summary">
+                        <span>${uniqueExercises} exercises</span>
+                        <span>${sessionVolume.toLocaleString()} volume</span>
+                    </div>
+                </div>
+                <div class="history-card-details"></div>
+            `;
+            dom.historyList.appendChild(card);
+        });
+    };
+
+    // --- CORE LOGIC ---
+    const updateWorkoutUI = () => {
+        if(state.programExecution.isActive) {
+            const currentProgramEx = state.programExecution.queue[state.programExecution.currentIndex];
+            if (currentProgramEx) {
+                 dom.exerciseSelectBtn.textContent = `NEXT: ${currentProgramEx.exercise}`;
+                 dom.exerciseSelectBtn.disabled = true;
+            }
+        } else {
+            dom.exerciseSelectBtn.textContent = state.currentExercise || 'SELECT EXERCISE';
+            dom.exerciseSelectBtn.disabled = false;
+        }
+    };
+    
+    const selectExercise = (exercise) => {
+        state.currentExercise = exercise;
+        updateWorkoutUI();
+        dom.exerciseModal.classList.remove('visible');
+        if (!state.programExecution.isActive) {
+            checkForSuggestions(exercise);
+        }
+    };
+    
+    const setupNextProgramSet = () => {
+        const { queue, currentIndex } = state.programExecution;
+        if(currentIndex >= queue.length) {
+            // Program finished
+            showAlert("Program Complete! 🏆");
+            endWorkout(false); // End silently
+            return;
+        }
+        const nextSetInfo = queue[currentIndex];
+        selectExercise(nextSetInfo.exercise);
+        // Clear inputs for next exercise
+        dom.weightInput.value = '';
+        dom.repsInput.value = '';
+        checkForSuggestions(nextSetInfo.exercise);
+    };
+
+    const addSet = () => {
+        const weight = parseFloat(dom.weightInput.value);
+        const reps = parseInt(dom.repsInput.value);
+
+        if (!state.currentExercise || isNaN(weight) || isNaN(reps)) {
+            showAlert("Please select an exercise and enter valid weight/reps.");
+            return;
+        }
+        const isPR = checkPR(state.currentExercise, weight, reps);
+        state.sessions.push({
+            id: Date.now(),
+            session: state.currentSessionId,
+            datetime: new Date().toISOString(),
+            exercise: state.currentExercise,
+            weight,
+            reps,
+            isPR,
+            template: state.programExecution.isActive ? state.programExecution.templateName : null
+        });
+        
+        startRestTimer(90);
+        dom.weightInput.value = weight;
+        dom.repsInput.value = reps;
+        
+        if(state.programExecution.isActive){
+            state.programExecution.currentIndex++;
+            setupNextProgramSet();
+        }
+        
+        render();
+        saveData();
+    };
+    
+    const endWorkout = (confirm = true) => {
+        const endAction = () => {
+            if (state.sessions.some(s => s.session === state.currentSessionId)) {
+                state.currentSessionId++;
+            }
+            state.currentExercise = '';
+            state.programExecution = { isActive: false, templateName: null, queue: [], currentIndex: 0 }; // Reset program
+            dom.weightInput.value = '';
+            dom.repsInput.value = '';
+            dom.suggestionBox.style.display = 'none';
+            render();
+            saveData();
+            if (confirm) showAlert("Workout ended. New session started!");
+        };
+
+        if (confirm && state.sessions.some(s => s.session === state.currentSessionId)) {
+            showAlert("End current workout?", endAction);
+        } else {
+            endAction();
+        }
+    };
+
+    // All other functions (checkPR, checkForSuggestions, startRestTimer, template logic, data management, etc.) remain largely the same...
+    // The following are stubs for brevity, but assume full implementation from previous version
+    const checkPR = (exercise, weight, reps) => {
+        if (!state.personalRecords[exercise]) state.personalRecords[exercise] = {};
+        let isNewPR = false;
+        const estimated1RM = weight * (1 + reps / 30);
+        if (!state.personalRecords[exercise].oneRepMax || estimated1RM > state.personalRecords[exercise].oneRepMax.value) {
+            state.personalRecords[exercise].oneRepMax = { value: estimated1RM, weight, reps };
+            isNewPR = true;
+        }
+        if (reps >= 5 && (!state.personalRecords[exercise].fiveRepMax || weight > state.personalRecords[exercise].fiveRepMax)) {
+            state.personalRecords[exercise].fiveRepMax = weight;
+            isNewPR = true;
+        }
+        return isNewPR;
+    };
+    const checkForSuggestions = (exercise) => {
+        if(state.programExecution.isActive) {
+            dom.suggestionBox.style.display = 'none';
+            return;
+        }
+        const history = state.sessions.filter(s => s.exercise === exercise);
+        if (history.length > 0) {
+            const lastSet = history[history.length - 1];
+            const suggestion = `Last: ${lastSet.weight}x${lastSet.reps}. Try ${lastSet.weight + 2.5}x${lastSet.reps}?`;
+            dom.suggestionBox.textContent = suggestion;
+            dom.suggestionBox.style.display = 'block';
+            dom.suggestionBox.onclick = () => {
+                dom.weightInput.value = lastSet.weight + 2.5;
+                dom.repsInput.value = lastSet.reps;
+                dom.suggestionBox.style.display = 'none';
+            };
+        } else {
+             dom.suggestionBox.style.display = 'none';
+        }
+    };
+    const startRestTimer = (seconds) => {
+        clearInterval(restTimer);
+        dom.timerBtn.textContent = `Rest (${seconds}s)`;
+        dom.timerBtn.disabled = true;
+        restTimer = setInterval(() => {
+            seconds--;
+            dom.timerBtn.textContent = `Rest (${seconds}s)`;
+            if (seconds <= 0) {
+                clearInterval(restTimer);
+                dom.timerBtn.textContent = 'Rest (90s)';
+                dom.timerBtn.style.background = 'var(--primary-color)';
+                dom.timerBtn.disabled = false;
+                if ('vibrate' in navigator) navigator.vibrate(200);
+                setTimeout(() => dom.timerBtn.style.background = '', 2000);
+            }
+        }, 1000);
+    };
+    const addExerciseToTemplateBuilder = (exerciseName) => {
+        newTemplateData.push({ exercise: exerciseName, sets: 3 });
+        dom.exerciseModal.classList.remove('visible');
+        renderTemplateBuilder();
+    };
+    const renderTemplateBuilder = () => {
+        dom.newTemplateExercises.innerHTML = '';
+        newTemplateData.forEach((ex, index) => {
+            const el = document.createElement('div');
+            el.className = 'template-exercise-item';
+            el.innerHTML = `
+                <span>${ex.exercise}</span>
+                <div>
+                    <button class="adjust-btn" data-template-idx="${index}" data-change="-1">-</button>
+                    <span style="margin: 0 10px;">${ex.sets} sets</span>
+                    <button class="adjust-btn" data-template-idx="${index}" data-change="1">+</button>
+                </div>
+            `;
+            dom.newTemplateExercises.appendChild(el);
+        });
+    };
+    const saveNewTemplate = () => {
+        const name = dom.newTemplateName.value.trim();
+        if (!name || newTemplateData.length === 0) {
+            showAlert("Please provide a name and add exercises.");
+            return;
+        }
+        state.templates.push({ name, exercises: newTemplateData });
+        dom.newTemplateName.value = '';
+        newTemplateData = [];
+        renderTemplateBuilder();
+        render();
+        saveData();
+        showAlert("Template saved!");
+    };
+    const startWorkoutFromTemplate = (index) => {
+        showAlert("Start workout with this template?", () => {
+            endWorkout(false);
+            const template = state.templates[index];
+            const queue = [];
+            template.exercises.forEach(ex => {
+                for (let i = 0; i < ex.sets; i++) {
+                    queue.push({ exercise: ex.exercise });
+                }
+            });
+            state.programExecution = { isActive: true, templateName: template.name, queue, currentIndex: 0 };
+            setupNextProgramSet();
+            switchTab('workout');
+        });
+    };
+    const exportData = () => {
+        const dataStr = JSON.stringify(state, null, 2);
+        const blob = new Blob([dataStr], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `strength-logger-backup-${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+    const importData = (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const importedState = JSON.parse(e.target.result);
+                showAlert("Overwrite current data?", () => {
+                    state = { ...state, ...importedState };
+                    render();
+                    saveData();
+                    showAlert("Data imported!");
+                });
+            } catch (err) { showAlert("Error parsing file."); }
+        };
+        reader.readAsText(file);
+    };
+    const switchTab = (tabId) => {
+        dom.tabContents.forEach(c => c.classList.remove('active'));
+        dom.tabButtons.forEach(b => b.classList.remove('active'));
+        document.getElementById(`${tabId}-tab`).classList.add('active');
+        document.querySelector(`[data-tab=${tabId}]`).classList.add('active');
+        if (tabId === 'history') renderHistoryTab();
+    };
+
+    // --- EVENT LISTENERS ---
+    const setupEventListeners = () => {
+        dom.tabButtons.forEach(b => b.onclick = () => switchTab(b.dataset.tab));
+        dom.exerciseSelectBtn.onclick = () => {
+            dom.exerciseModal.dataset.mode = 'workout';
+            dom.exerciseModal.classList.add('visible');
+        };
+        dom.exerciseModal.onclick = (e) => {
+            if (e.target === dom.exerciseModal) dom.exerciseModal.classList.remove('visible');
+        };
+        dom.addNewExerciseBtn.onclick = () => {
+            const name = dom.newExerciseName.value.trim();
+            if(name && !state.exercises.includes(name)) {
+                state.exercises.push(name);
+                dom.newExerciseName.value = '';
+                renderExerciseList();
+                saveData();
+            }
+        };
+        dom.addSetBtn.onclick = addSet;
+        dom.timerBtn.onclick = () => startRestTimer(90);
+        dom.endWorkoutBtn.onclick = () => endWorkout(true);
+        dom.saveTemplateBtn.onclick = saveNewTemplate;
+        dom.addExerciseToTemplateBtn.onclick = () => {
+            dom.exerciseModal.dataset.mode = 'template';
+            dom.exerciseModal.classList.add('visible');
+        };
+        dom.newTemplateExercises.onclick = (e) => {
+            const target = e.target;
+            if(target.classList.contains('adjust-btn')) {
+                const index = parseInt(target.dataset.templateIdx, 10);
+                const change = parseInt(target.dataset.change, 10);
+                newTemplateData[index].sets = Math.max(1, newTemplateData[index].sets + change);
+                renderTemplateBuilder();
+            }
+        };
+        dom.sessionHistory.onclick = (e) => {
+            if (e.target.classList.contains('delete-btn')) {
+                const setId = parseInt(e.target.dataset.id, 10);
+                state.sessions = state.sessions.filter(s => s.id !== setId);
+                render();
+                saveData();
+            }
+        };
+        dom.templateList.onclick = (e) => {
+            if (e.target.dataset.templateIndex) {
+                startWorkoutFromTemplate(parseInt(e.target.dataset.templateIndex, 10));
+            }
+            if (e.target.dataset.deleteIndex) {
+                showAlert("Delete this template?", () => {
+                    const index = parseInt(e.target.dataset.deleteIndex, 10);
+                    state.templates.splice(index, 1);
+                    render();
+                    saveData();
+                });
+            }
+        };
+        document.querySelectorAll('.adjust-btn[data-input]').forEach(btn => {
+            btn.onclick = () => {
+                const input = document.getElementById(`${btn.dataset.input}Input`);
+                const step = parseFloat(btn.dataset.step);
+                input.value = Math.max(0, parseFloat(input.value || 0) + step);
+            };
+        });
+        dom.exportDataBtn.onclick = exportData;
+        dom.importDataBtn.onclick = () => dom.importFile.click();
+        dom.importFile.onchange = importData;
+        
+        dom.historyList.addEventListener('click', (e) => {
+            const card = e.target.closest('.history-card');
+            if (card) {
+                const details = card.querySelector('.history-card-details');
+                const sessionId = card.dataset.sessionId;
+                const isVisible = details.style.display === 'block';
+
+                if (isVisible) {
+                    details.style.display = 'none';
+                } else {
+                    const sets = state.sessions.filter(s => s.session == sessionId);
+                    details.innerHTML = sets.map(s => `<div><strong>${s.exercise}:</strong> ${s.weight} x ${s.reps}</div>`).join('');
+                    details.style.display = 'block';
+                }
+            }
+        });
+    };
+
+    // --- INITIALIZATION ---
+    const init = () => {
+      loadData();
+      render();
+      setupEventListeners();
+    };
+
+    init();
+  </script>
+</body>
+</html>
