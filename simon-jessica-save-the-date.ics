@@ -1,0 +1,17 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Simon & Jessica//Save the Date//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:save-the-date-20260729-simon-jessica@save-the-date
+DTSTAMP:20260120T000000Z
+SUMMARY:Wedding — Simon Högborg Rosengren & Jessica Peel
+DTSTART;VALUE=DATE:20260729
+DTEND;VALUE=DATE:20260730
+LOCATION:Ådala Loge, outside Lund, Sweden
+DESCRIPTION:Save the date! More details and RSVP info will follow.
+STATUS:CONFIRMED
+TRANSP:TRANSPARENT
+END:VEVENT
+END:VCALENDAR
