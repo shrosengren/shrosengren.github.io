@@ -6,11 +6,11 @@ METHOD:PUBLISH
 BEGIN:VEVENT
 UID:save-the-date-20260729-simon-jessica@save-the-date
 DTSTAMP:20260120T000000Z
-SUMMARY:Wedding — Simon Högborg Rosengren & Jessica Peel
+SUMMARY:🍾 Wedding 🍾 — Simon Högborg Rosengren & Jessica Peel
 DTSTART;VALUE=DATE:20260729
 DTEND;VALUE=DATE:20260730
-LOCATION:Ådala Loge, outside Lund, Sweden
-DESCRIPTION:Save the date! More details and RSVP info will follow.
+LOCATION:Ådala loge\nÅdala Gård\, 247 97 Flyinge\, Sweden
+DESCRIPTION:For more information: https://www.jessicaxsimon.site/
 STATUS:CONFIRMED
 TRANSP:TRANSPARENT
 END:VEVENT
